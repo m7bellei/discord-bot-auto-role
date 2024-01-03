@@ -18,8 +18,6 @@ const client = new Client({
     // Adicione outros emojis e cargos conforme necessário
 };
 
-
-
 const CHANNEL_ID = process.env.CHANNEL_ID; // Substitua pelo ID do seu canal
 const MESSAGE_ID = process.env.MESSAGE_ID; // Substitua pelo ID da sua mensagem fixada
 
@@ -50,18 +48,19 @@ const handleReaction = async (reaction, user, add) => {
         if (!roleName) return;
 
         const role = message.guild.roles.cache.find(role => role.name === roleName);
-        const member = await message.guild.members.fetch(user.id).catch(console.error); // Atualizado
+        const member = await message.guild.members.fetch(user.id).catch(console.error); 
 
         if (member) {
             if (add) {
+                console.log(`${user.tag} adicionou o arquétipo: ${roleName}`);
                 member.roles.add(role).catch(console.error);
             } else {
+                console.log(`${user.tag} removeu o arquétipo: ${roleName}`);
                 member.roles.remove(role).catch(console.error);
             }
         }
     }
 };
-
 
 client.on('messageReactionAdd', (reaction, user) => {
     handleReaction(reaction, user, true);
