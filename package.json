@@ -4,7 +4,8 @@
   "description": "Auto archetype selector for discord members",
   "main": "archetype.js",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "start": "node archetype.js"
   },
   "keywords": [
     "ravendawn-archetypes"
