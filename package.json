@@ -6,7 +6,7 @@
   "scripts": {
     "test": "jest",
     "start": "node archetype.js",
-    "build": "mkdir -p public"
+    "build": "echo 'Build complete!'"
   },
   "keywords": [
     "ravendawn-archetypes"
