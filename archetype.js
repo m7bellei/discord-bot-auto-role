@@ -2,9 +2,13 @@ const { Client, GatewayIntentBits } = require('discord.js');
 
 require('dotenv').config();
 
-const client = new Client({ 
-    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessageReactions] 
-  });
+const client = new Client({
+    intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildMessageReactions,
+        GatewayIntentBits.GuildMembers // Adicionado para acessar membros do servidor
+    ]
+});
   
   const archetypes = {
     'archery:1128370029742800946': 'rd:Archery',
@@ -33,6 +37,24 @@ client.on('ready', async () => {
         }
     } catch (error) {
         console.error('Erro ao reagir à mensagem fixada:', error);
+    }
+
+    // listar membros com os cargos
+    const guild = client.guilds.cache.get(channel.guild.id);
+    if (!guild) return;
+    try {
+        const members = await guild.members.fetch();
+        members.forEach(member => {
+            const roles = member.roles.cache
+                .filter(role => role.name.startsWith('rd:'))
+                .map(role => role.name)
+                .join(', ');
+            if (roles) {
+                console.log(`${member.user.tag}: ${roles}`);
+            }
+        });
+    } catch (error) {
+        console.error('Erro ao listar membros:', error);
     }
 });
 
