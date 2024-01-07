@@ -30,35 +30,29 @@ client.on('ready', async () => {
 
     const channel = client.channels.cache.get(CHANNEL_ID);
     if (!channel) return;
-    try {
-        const message = await channel.messages.fetch(MESSAGE_ID);
-        for (const emoji in archetypes) {
-            await message.react(emoji);
-        }
-    } catch (error) {
-        console.error('Erro ao reagir à mensagem fixada:', error);
-    }
 
-    // listar membros com os cargos
-    const guild = client.guilds.cache.get(channel.guild.id);
-    if (!guild) return;
     try {
+        await channel.messages.fetch(MESSAGE_ID); // Garante que a mensagem está carregada
+        const guild = client.guilds.cache.get(channel.guild.id);
+        if (!guild) return;
+
         const members = await guild.members.fetch();
         members.forEach(member => {
-            const roles = member.roles.cache
-                .filter(role => role.name.startsWith('rd:'))
-                .map(role => role.name)
-                .join(', ');
-            if (roles) {
-                console.log(`${member.user.tag}: ${roles}`);
-            }
-        });
-    } catch (error) {
-        console.error('Erro ao listar membros:', error);
-    }
+            if (member.user.bot) return;
 
-    await initializeOrUpdateReactions();
-    await updateOrCreateLineupMessage();
+            member.roles.cache.forEach(role => {
+                const archetypeEntry = Object.values(archetypes).find(a => a.name === role.name);
+                if (archetypeEntry) {
+                    if (!userReactions[member.user.id]) userReactions[member.user.id] = new Set();
+                    userReactions[member.user.id].add(archetypeEntry.emoji);
+                }
+            });
+        });
+
+        await updateOrCreateLineupMessage();
+    } catch (error) {
+        console.error('Erro ao inicializar as reações ou atualizar a mensagem de lineup:', error);
+    }
 });
 
 const userReactions = {};
@@ -93,25 +87,6 @@ const updateOrCreateLineupMessage = async () => {
     }
 };
 
-const initializeOrUpdateReactions = async () => {
-    try {
-        const message = await client.channels.cache.get(CHANNEL_ID).messages.fetch(MESSAGE_ID);
-        message.reactions.cache.forEach(async (reaction) => {
-            const users = await reaction.users.fetch();
-            users.forEach((user) => {
-                if (!user.bot) {
-                    const archetype = archetypes[reaction.emoji.name + ':' + reaction.emoji.id];
-                    if (archetype) {
-                        if (!userReactions[user.id]) userReactions[user.id] = new Set();
-                        userReactions[user.id].add(archetype.emoji);
-                    }
-                }
-            });
-        });
-    } catch (error) {
-        console.error('Erro ao inicializar as reações:', error);
-    }
-};
 
 const handleReaction = async (reaction, user, add) => {
     if (reaction.message.partial) await reaction.message.fetch();
