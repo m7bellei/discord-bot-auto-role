@@ -9,21 +9,21 @@ const client = new Client({
         GatewayIntentBits.GuildMembers // Adicionado para acessar membros do servidor
     ]
 });
-  
-  const archetypes = {
-    'archery:1128370029742800946': { name: 'rd:Archery', emoji: 'archery' },
-    'protection:1128370032947232789': { name: 'rd:Protection', emoji: '<:protection:1128370032947232789>' },
-    'shadow:1128370034520096799': { name: 'rd:Shadow', emoji: '<:shadow:1128370034520096799>' },
-    'warfare:1128370038852833361': { name: 'rd:Warfare', emoji: '<:warfare:1128370038852833361>' },
-    'spiritual:1128370037451919452': { name: 'rd:Spiritual', emoji: '<:spiritual:1128370037451919452>' },
-    'witchcraft:1128370043856625674': { name: 'rd:Witchcraft', emoji: '<:witchcraft:1128370043856625674>' },
-    'holy:1128370041537187961': { name: 'rd:Holy', emoji: '<:holy:1128370041537187961>' },
-    'wizardry:1128370046851362846': { name: 'rd:Wizardry', emoji: '<:wizardry:1128370046851362846>' },
-};
 
 const CHANNEL_ID = process.env.CHANNEL_ID; // Substitua pelo ID do seu canal
 const MESSAGE_ID = process.env.MESSAGE_ID; // Substitua pelo ID da sua mensagem fixada
 const LINEUP_CHANNEL_ID = process.env.LINEUP_CHANNEL; // Substitua pelo ID do seu canal de lineup
+  
+const archetypes = {
+    'archery:1128370029742800946': { name: 'rd:Archery', emoji: '<:archery:1193735957401305180>' },
+    'protection:1128370032947232789': { name: 'rd:Protection', emoji: '<:protection:1193735963063615600>' },
+    'shadow:1128370034520096799': { name: 'rd:Shadow', emoji: '<:shadow:1193735965492117567>' },
+    'warfare:1128370038852833361': { name: 'rd:Warfare', emoji: '<:warfare:1193735968210047028>' },
+    'spiritual:1128370037451919452': { name: 'rd:Spiritual', emoji: '<:spiritual:1193735966880436224>' },
+    'witchcraft:1128370043856625674': { name: 'rd:Witchcraft', emoji: '<:witchcraft:1193736761424216134>' },
+    'holy:1128370041537187961': { name: 'rd:Holy', emoji: '<:holy:1193735961515933838>' },
+    'wizardry:1128370046851362846': { name: 'rd:Wizardry', emoji: '<:wizardry:1193735973863968798>' },
+};
 
 client.on('ready', async () => {
     console.log(`Logado como ${client.user.tag}!`);
@@ -50,6 +50,7 @@ client.on('ready', async () => {
         });
 
         await updateOrCreateLineupMessage();
+        console.log('Lineup message iniciada com sucesso!');
     } catch (error) {
         console.error('Erro ao inicializar as reações ou atualizar a mensagem de lineup:', error);
     }
@@ -79,7 +80,7 @@ const updateOrCreateLineupMessage = async () => {
                 return `${user ? user.toString() : 'Usuário Desconhecido'}: ${emojis.join(' ')}`;
             })
         );
-    
+
         const lineupMessageContent = "RAVENDAWN VALHALLA LINEUP:\n\n" + lineupEntries.join('\n');
         await lineupMessage.edit(lineupMessageContent);
     } catch (error) {
@@ -96,7 +97,8 @@ const handleReaction = async (reaction, user, add) => {
     const { message, emoji } = reaction;
 
     if (message.id === MESSAGE_ID && message.channel.id === CHANNEL_ID) {
-        const archetype = archetypes[emoji.name + ':' + emoji.id];
+        const emojiKey = `${emoji.name}:${emoji.id}`;
+        const archetype = Object.values(archetypes).find(a => emojiKey in archetypes && a.name === archetypes[emojiKey].name);
         if (!archetype) return;
 
         const role = message.guild.roles.cache.find(r => r.name === archetype.name);
