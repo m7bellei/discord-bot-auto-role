@@ -48,35 +48,35 @@ async function updateOrCreateLineupMessage() {
         const lineupChannel = client.channels.cache.get(LINEUP_CHANNEL_ID);
         if (!lineupChannel) throw new Error("Canal de lineup não encontrado");
 
-        let lineupMessage;
-        const messages = await lineupChannel.messages.fetch({ limit: 100 });
-        const botMessages = messages.filter(msg => msg.author.bot && msg.author.id === client.user.id);
-
-        if (botMessages.size > 0) {
-            lineupMessage = botMessages.first();
-        } else {
-            lineupMessage = await lineupChannel.send("RAVENDAWN VALHALLA LINEUP:\n\nInicializando...");
-        }
+        await clearBotMessages(lineupChannel); // Limpa as mensagens anteriores do bot
 
         const lineupEntries = Object.entries(userReactions).map(([userId, archetypesSet]) => {
             const user = client.users.cache.get(userId) || 'Usuário Desconhecido';
-            const emojis = Array.from(archetypesSet);
-            return `${user}: ${emojis.join(' ')}`;
+            const emojis = Array.from(archetypesSet).join(' ');
+            return `${user}: ${emojis}`;
         });
 
         let lineupMessageContent = "RAVENDAWN VALHALLA LINEUP:\n\n" + lineupEntries.join('\n');
 
+        // Envia a mensagem de lineup
         if (lineupMessageContent.length > 2000) {
             const parts = splitMessageIntoParts(lineupMessageContent);
-            await lineupMessage.edit(parts[0]);
-            for (let i = 1; i < parts.length; i++) {
-                await lineupChannel.send(parts[i]);
+            for (const part of parts) {
+                await lineupChannel.send(part);
             }
         } else {
-            await lineupMessage.edit(lineupMessageContent);
+            await lineupChannel.send(lineupMessageContent);
         }
     } catch (error) {
         console.error('Erro ao atualizar ou criar a mensagem de lineup:', error);
+    }
+}
+
+async function clearBotMessages(channel) {
+    const messages = await channel.messages.fetch();
+    const botMessages = messages.filter(msg => msg.author.bot && msg.author.id === client.user.id);
+    for (const message of botMessages.values()) {
+        await message.delete();
     }
 }
 
